@@ -90,7 +90,7 @@ const sketch = p => {
 
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-    p.frameRate(1);
+    p.frameRate(10);
   };
 
   function drawSierpinskiTriangle(triangle, desiredLevel, currentLevel = 0) {
@@ -105,8 +105,14 @@ const sketch = p => {
   }
 
   p.draw = () => {
-    const first = trianglePoints(500, 500, 700, false);
-    if (p.frameCount < 20) {
+    if (p.frameCount < 11) {
+      p.clear();
+      p.push();
+      const scaleFactor = p.frameCount / 2;
+      p.strokeWeight(1 / scaleFactor);
+      p.translate(-100 * scaleFactor, -30 * scaleFactor);
+      p.scale(scaleFactor);
+      const first = trianglePoints(0, 0, 800, false);
       drawPoints(first);
       drawSierpinskiTriangle(first, p.frameCount);
     }
