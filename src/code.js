@@ -1,7 +1,7 @@
 import p5 from "p5";
 
-const CANVAS_WIDTH = window.innerWidth - 10;
-const CANVAS_HEIGHT = window.innerHeight - 10;
+const CANVAS_WIDTH = window.innerWidth;
+const CANVAS_HEIGHT = window.innerHeight;
 const ROOT_3 = Math.sqrt(3);
 
 function triangleHeight(side) {
@@ -69,12 +69,13 @@ const sketch = p => {
     p.endShape(p.CLOSE);
   }
 
-  const cache = new TriangleCache();
+  const calcCache = new TriangleCache();
+  const drawCache = new TriangleCache();
 
   // subdivide upright triangle
   function subdivideTriangleInPoints(triangle) {
     const [[ax, ay], [bx, by], [cx, cy]] = triangle;
-    const cached = cache.getTriangles(triangle);
+    const cached = calcCache.getTriangles(triangle);
     if (cached) {
       return cached;
     }
@@ -84,13 +85,13 @@ const sketch = p => {
     const top = completeUprightTriangle(bottomLeft[2], bottomRight[2]);
     const center = [bottomLeft[2], bottomRight[2], bottomLeft[1]];
     const triangles = [center, bottomRight, bottomLeft, top];
-    cache.setTriangles(triangle, triangles);
+    calcCache.setTriangles(triangle, triangles);
     return triangles;
   }
 
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-    p.frameRate(10);
+    p.frameRate(5);
   };
 
   function drawSierpinskiTriangle(triangle, desiredLevel, currentLevel = 0) {
@@ -98,22 +99,31 @@ const sketch = p => {
       return;
     }
     const [center, ...others] = subdivideTriangleInPoints(triangle);
-    drawPoints(center);
+    if (!drawCache.getTriangles(center)) {
+      drawPoints(center);
+      drawCache.setTriangles(center, true);
+    }
     for (const part of others) {
       drawSierpinskiTriangle(part, desiredLevel, currentLevel + 1);
     }
   }
 
   p.draw = () => {
-    if (p.frameCount < 11) {
+    const x0 = 100;
+    const y0 = 100;
+    const s0 = 800;
+    if (p.frameCount <= 11) {
       p.clear();
-      p.push();
-      const scaleFactor = p.frameCount / 2;
+      p.stroke(32, 32, 32);
+      const scaleFactor = p.frameCount * 1.1;
+      const x = scaleFactor * x0;
+      const y = scaleFactor * y0;
+      p.translate(CANVAS_WIDTH / 3, CANVAS_HEIGHT / 2);
+      //p.rotate((p.frameCount * p.PI) / 3);
+      //p.translate(0, -triangleHeight(y));
       p.strokeWeight(1 / scaleFactor);
-      p.translate(-100 * scaleFactor, -30 * scaleFactor);
-      p.scale(scaleFactor);
-      const first = trianglePoints(0, 0, 800, false);
-      drawPoints(first);
+      //p.scale(scaleFactor);
+      const first = trianglePoints(x0, y0, s0, false);
       drawSierpinskiTriangle(first, p.frameCount);
     }
   };
