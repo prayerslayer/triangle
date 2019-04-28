@@ -94,18 +94,21 @@ const sketch = p => {
     p.frameRate(5);
   };
 
-  function drawSierpinskiTriangle(triangle, desiredLevel, currentLevel = 0) {
+  function getSierpinskiTriangles(
+    start,
+    triangles,
+    desiredLevel,
+    currentLevel = 0
+  ) {
     if (desiredLevel === currentLevel) {
-      return;
+      return triangles;
     }
-    const [center, ...others] = subdivideTriangleInPoints(triangle);
-    if (!drawCache.getTriangles(center)) {
-      drawPoints(center);
-      drawCache.setTriangles(center, true);
-    }
+    const [center, ...others] = subdivideTriangleInPoints(start);
+    triangles.push(center);
     for (const part of others) {
-      drawSierpinskiTriangle(part, desiredLevel, currentLevel + 1);
+      getSierpinskiTriangles(part, triangles, desiredLevel, currentLevel + 1);
     }
+    return triangles;
   }
 
   p.draw = () => {
@@ -124,7 +127,10 @@ const sketch = p => {
       p.strokeWeight(1 / scaleFactor);
       //p.scale(scaleFactor);
       const first = trianglePoints(x0, y0, s0, false);
-      drawSierpinskiTriangle(first, p.frameCount);
+      const all = getSierpinskiTriangles(first, [], p.frameCount);
+      for (const triangle of all) {
+        drawPoints(triangle);
+      }
     }
   };
 };
