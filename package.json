@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "parcel index.html",
-    "build": "parcel build index.html -d docs --detailed-report --public-url /travel-with-spotify",
+    "build": "parcel build index.html -d docs --detailed-report --public-url /triangle",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

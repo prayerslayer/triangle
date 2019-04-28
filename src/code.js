@@ -140,6 +140,7 @@ const sketch = p => {
     drawPoints(first);
     const all = getSierpinskiTriangles(first, [], level);
     for (const triangle of all) {
+      // TODO draw is a noop if already drawn, but still doing all the calls
       drawPoints(triangle);
     }
   };
