@@ -1,4 +1,5 @@
 import p5 from "p5";
+import "p5/lib/addons/p5.dom";
 
 const CANVAS_WIDTH = window.innerWidth;
 const CANVAS_HEIGHT = window.innerHeight;
@@ -61,16 +62,28 @@ function TriangleCache() {
 }
 
 const sketch = p => {
+  let level = 0;
+
+  function addLevel() {
+    level += 1;
+  }
+
+  const calcCache = new TriangleCache();
+  const drawCache = new TriangleCache();
+
   function drawPoints(points) {
+    // noop if already drawn
+    const cached = drawCache.getTriangles(points);
+    if (cached) {
+      return;
+    }
     p.beginShape();
     for (const point of points) {
       p.vertex(...point);
     }
     p.endShape(p.CLOSE);
+    drawCache.setTriangles(points, true);
   }
-
-  const calcCache = new TriangleCache();
-  const drawCache = new TriangleCache();
 
   // subdivide upright triangle
   function subdivideTriangleInPoints(triangle) {
@@ -92,6 +105,10 @@ const sketch = p => {
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     p.frameRate(5);
+
+    let btn = p.createButton("add level");
+    btn.position(0, 0);
+    btn.mousePressed(addLevel);
   };
 
   function getSierpinskiTriangles(
@@ -115,22 +132,15 @@ const sketch = p => {
     const x0 = 100;
     const y0 = 100;
     const s0 = 800;
-    if (p.frameCount <= 11) {
-      p.clear();
-      p.stroke(32, 32, 32);
-      const scaleFactor = p.frameCount * 1.1;
-      const x = scaleFactor * x0;
-      const y = scaleFactor * y0;
-      p.translate(CANVAS_WIDTH / 3, CANVAS_HEIGHT / 2);
-      //p.rotate((p.frameCount * p.PI) / 3);
-      //p.translate(0, -triangleHeight(y));
-      p.strokeWeight(1 / scaleFactor);
-      //p.scale(scaleFactor);
-      const first = trianglePoints(x0, y0, s0, false);
-      const all = getSierpinskiTriangles(first, [], p.frameCount);
-      for (const triangle of all) {
-        drawPoints(triangle);
-      }
+    p.translate(CANVAS_WIDTH / 3, CANVAS_HEIGHT / 2);
+
+    p.stroke(32, 32, 32);
+    p.strokeWeight(1 / level);
+    const first = trianglePoints(x0, y0, s0, false);
+    drawPoints(first);
+    const all = getSierpinskiTriangles(first, [], level);
+    for (const triangle of all) {
+      drawPoints(triangle);
     }
   };
 };
